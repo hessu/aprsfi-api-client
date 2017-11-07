@@ -12,7 +12,8 @@ DEFAULT_USER_AGENT = 'aprsfi-py-api-client 1.0'
 
 class APRSFIClient(object):
     """
-    Post objects to aprs.fi using the REST API
+    Post objects to aprs.fi using the REST API. Note that this API is
+    currently not available on the main aprs.fi site.
     """
     def __init__(self, logger = None, apibase = DEFAULT_APIBASE, apikey = None, basicauth_user = None, basicauth_pass = None, user_agent = DEFAULT_USER_AGENT):
         self.log = logger
@@ -97,7 +98,7 @@ class APRSFIClient(object):
         self.process_yaml(yo)
 
 def get_logger():
-    log = logging.getLogger('aprsfi-objects')
+    log = logging.getLogger('aprsfi-api-client')
     log.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(name)s: %(levelname)s - %(message)s')
     handler = logging.handlers.SysLogHandler(address = '/dev/log')
@@ -108,7 +109,7 @@ def get_logger():
     return log
     
 def main():
-    parser = argparse.ArgumentParser(description='Upload position data to aprs.fi API')
+    parser = argparse.ArgumentParser(description='Upload data to aprs.fi API')
     parser.add_argument('--api-key', dest='api_key', type=str, help='API key')
     parser.add_argument('--base-url', dest='base_url', type=str, default=DEFAULT_APIBASE, help='API base URL')
     parser.add_argument('--input-file', dest='input_file', type=str, help='YAML file path')
