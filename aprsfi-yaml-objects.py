@@ -33,14 +33,22 @@ class APRSFIClient(object):
         }
         url_params['apikey'] = self.apikey
         
-        r = requests.post(url_full, params = url_params, json = postdata, auth = self.basic_auth,
-            headers = headers, timeout = 20)
-        
-        if r.status_code == 200:
-            self.log.info("OK: %s got %d: %s" % (loginfo, r.status_code, r.text))
-        else:
-            self.log.error("FAIL: %s got %d: %s" % (loginfo, r.status_code, r.text))
-    
+        try:
+            r = requests.post(url_full, params = url_params, json = postdata, auth = self.basic_auth,
+                headers = headers, timeout = 30)
+            r.raise_for_status()
+            rdata = r.json()
+            if rdata.get('result') == 'ok':
+                self.log.info("OK: %s got %d: %s" % (loginfo, r.status_code, r.text))
+            else:
+                self.log.error("FAIL: %s got %d: %s" % (loginfo, r.status_code, r.text))
+        except requests.exceptions.HTTPError as exc:
+            self.log.error("FAIL HTTP: %s: %r", loginfo, exc)
+            return
+        except Exception as exc:
+            self.log.error("FAIL HTTP: %s: %r", loginfo, exc)
+            return
+            
     def post_object(self, obj):
         self.api_req("post", {"what": "loc"}, {
             'type': 'o',
@@ -80,7 +88,10 @@ class APRSFIClient(object):
             self.log.error("YAML failure for %s: %r", url, exc)
             return
         except requests.exceptions.HTTPError as exc:
-            self.log.error("HTTP error for %s: %r", url, exc)
+            self.log.error("YAML HTTP error for %s: %r", url, exc)
+            return
+        except Exception as exc:
+            self.log.error("YAML exception for %s: %r", url, exc)
             return
         
         self.process_yaml(yo)
@@ -102,6 +113,7 @@ def main():
     parser.add_argument('--base-url', dest='base_url', type=str, default=DEFAULT_APIBASE, help='API base URL')
     parser.add_argument('--input-file', dest='input_file', type=str, help='YAML file path')
     parser.add_argument('--input-url', dest='input_url', type=str, help='YAML file URL')
+    # only used in testing environment
     parser.add_argument('--basicauth-user', dest='basicauth_user', type=str, help='debug/test env: username')
     parser.add_argument('--basicauth-pass', dest='basicauth_pass', type=str, help='debug/test env: password')
 
