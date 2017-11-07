@@ -128,5 +128,7 @@ def main():
     if args.input_url:
         ayo.process_url(args.input_url)
 
-main()
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
 
